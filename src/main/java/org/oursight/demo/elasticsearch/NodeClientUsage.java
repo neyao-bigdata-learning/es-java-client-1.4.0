@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Created by neyao@github.com on 2016/3/25.
  */
-public class NodeClient {
+public class NodeClientUsage {
 
     public static Node esNode = NodeBuilder.nodeBuilder().clusterName("my-application").node();
     public static Client esClient = esNode.client();
