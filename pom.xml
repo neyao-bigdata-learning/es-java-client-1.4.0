@@ -16,6 +16,13 @@
             <version>1.4.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20160212</version>
+        </dependency>
+
+
         <!--<dependency>-->
             <!--<groupId>org.elasticsearch</groupId>-->
             <!--<artifactId>elasticsearch</artifactId>-->

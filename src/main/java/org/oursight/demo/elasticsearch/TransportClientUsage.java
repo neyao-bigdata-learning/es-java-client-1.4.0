@@ -9,6 +9,7 @@ import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.oursight.demo.elasticsearch.usage.SearchAPI;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -27,11 +28,14 @@ public class TransportClientUsage {
 //        Client esClient = connect("my-application", "127.0.0.1", 9300, "megacorp");
 
         // connect to a 1.7.0 ES, which will success
-        Client esClient = connect("elasticsearch", "221.122.121.96", 19300);
+        Client esClient = connect("elasticsearch", "192.168.1.1", 9300);
 
 //        getSeveralDocs(esClient, "flume-bank-parsers" ,5);
 
-        getSingleDoc(esClient, "flume-bank-parsers" ,null, "00473676");
+        // getSingleDoc(esClient, "flume-bank-parsers", null, "00473676");
+
+        SearchAPI.search(esClient);
+//        SearchAPI.searchByRawQueryString(esClient);
 
         // ---
         esClient.close();
@@ -61,12 +65,13 @@ public class TransportClientUsage {
 
     /**
      * To get a single document from ES
+     *
      * @param esClient
      * @param indexName
      * @param type
      * @param id
      */
-    public static void getSingleDoc(Client esClient,  String indexName,@Nullable String type, String id) {
+    public static void getSingleDoc(Client esClient, String indexName, @Nullable String type, String id) {
         GetResponse response = esClient.prepareGet(indexName, type, id).execute().actionGet();
         System.out.println("response = " + response);
         System.out.println("response.getSource() = " + response.getSource());
@@ -80,11 +85,12 @@ public class TransportClientUsage {
 
     public static void createDocument(Client esClient) {
         Map<String, Object> json = new HashMap<String, Object>();
-        json.put("user","kimchy");
-        json.put("postDate",new Date());
-        json.put("message","trying out Elasticsearch");
+        json.put("user", "kimchy");
+        json.put("postDate", new Date());
+        json.put("message", "trying out Elasticsearch");
 
         //esClient.prepareIndex("mega")
 
     }
+
 }
