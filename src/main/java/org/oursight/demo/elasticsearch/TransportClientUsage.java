@@ -30,12 +30,16 @@ public class TransportClientUsage {
         // connect to a 1.7.0 ES, which will success
         Client esClient = connect("elasticsearch", "192.168.1.1", 9300);
 
+
 //        getSeveralDocs(esClient, "flume-bank-parsers" ,5);
 
         // getSingleDoc(esClient, "flume-bank-parsers", null, "00473676");
 
-        SearchAPI.search(esClient);
+//        SearchAPI.search(esClient);
 //        SearchAPI.searchByRawQueryString(esClient);
+//        SearchAPI.listAllIndices(esClient);
+//        SearchAPI.listFields(esClient, "flume-bank-parsers");
+        SearchAPI.aggregationByTerms(esClient,"flume-bank-parsers", "flumetype", "snc_region_province");
 
         // ---
         esClient.close();
@@ -92,5 +96,6 @@ public class TransportClientUsage {
         //esClient.prepareIndex("mega")
 
     }
+
 
 }

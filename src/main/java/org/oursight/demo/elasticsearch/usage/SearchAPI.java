@@ -1,20 +1,43 @@
 package org.oursight.demo.elasticsearch.usage;
 
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.cluster.ClusterState;
+import org.elasticsearch.cluster.metadata.IndexMetaData;
+import org.elasticsearch.cluster.metadata.MappingMetaData;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.json.JSONObject;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by neyao@github.com on 2016/4/8.
  */
 public class SearchAPI {
 
+    /**
+     * Belone search is the same as:
+      {
+         "query" : {
+             "match" : {
+                 "scc_lastaddress" : "北京"
+             }
+         }
+     }
+     * @param esClient
+     */
     public static void search(Client esClient) {
         // see below link for more details
         // https://www.elastic.co/guide/en/elasticsearch/client/java-api/1.4/search.html
@@ -27,7 +50,7 @@ public class SearchAPI {
                 .setExplain(true)
                 .execute().
                         actionGet();
-       // System.out.println("searchResponse = " + searchResponse);
+        // System.out.println("searchResponse = " + searchResponse);
 
         iterateResponse(searchResponse, "scc_lastaddress");
 
@@ -95,4 +118,101 @@ public class SearchAPI {
 
         }
     }
+
+    public static void listAllIndices(Client esClient) {
+        String[] allIndices = esClient.admin().cluster().prepareState().execute().actionGet().getState().getMetaData().concreteAllIndices();
+
+        if (allIndices == null) {
+            System.out.println("Indices is null");
+            return;
+        }
+
+        for (String index : allIndices) {
+            System.out.println(index);
+        }
+        System.out.println("-------------------");
+        System.out.println("All count: " + allIndices.length);
+        System.out.println("-------------------");
+    }
+
+    public static void listFields(Client esClient, String index) {
+        ClusterState clusterState = esClient.admin().cluster().prepareState().setIndices(index).execute().actionGet().getState();
+        IndexMetaData indexMetaData = clusterState.getMetaData().index(index);
+        MappingMetaData mappingMetaData = indexMetaData.mapping("flumetype");
+
+        Map map = null;
+
+        try {
+            map = mappingMetaData.getSourceAsMap();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("map = " + map);
+        List<String> fieldList = new ArrayList<String>();
+        fieldList = getList("", map);
+
+        System.out.println("Field List:");
+        for (String field : fieldList) {
+            System.out.println(field);
+        }
+        System.out.println();
+        System.out.println("-------------------------");
+        System.out.println("fieldList.size() = " + fieldList.size());
+        System.out.println("-------------------------");
+    }
+
+    private static List<String> getList(String fieldName, Map<String, Object> mapProperties) {
+        List<String> fieldList = new ArrayList<String>();
+        Map<String, Object> map = (Map<String, Object>) mapProperties.get("properties");
+        Set<String> keys = map.keySet();
+        for (String key : keys) {
+            if (((Map<String, Object>) map.get(key)).containsKey("type")) {
+                fieldList.add(fieldName + "" + key);
+            } else {
+                List<String> tempList = getList(fieldName + "" + key + ".", (Map<String, Object>) map.get(key));
+                fieldList.addAll(tempList);
+            }
+        }
+        return fieldList;
+    }
+
+    /**
+     * see below links for more details:
+     * https://www.elastic.co/guide/en/elasticsearch/client/java-api/1.4/_bucket_aggregations.html
+     *
+     * @param esClient
+     * @param index
+     * @param type
+     * @param aggFieldName
+     */
+    public static void aggregationByTerms(Client esClient, String index, String type, String aggFieldName) {
+        SearchRequestBuilder searchRequestBuilder = esClient.prepareSearch(index).setTypes(type).setSize(0).
+                addAggregation(AggregationBuilders.terms("aggName_test").field(aggFieldName));
+
+//        SearchRequestBuilder searchRequestBuilder = esClient.prepareSearch(index).setTypes(type).setSize(0).
+//                addAggregation(AggregationBuilders.global("aggName_test_1").subAggregation(AggregationBuilders.terms("aggName_test_2").field(aggFieldName)));
+
+
+
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+
+        //Global agg = searchResponse.getAggregations().get("aggName_test");
+        //System.out.println("agg.getDocCount(): " + agg.getDocCount()); // get the "total" in "hits" of json
+
+        System.out.println("searchResponse = " + searchResponse);
+
+        Map<String, Aggregation> aggMap = searchResponse.getAggregations().asMap();
+        StringTerms terms = (StringTerms) aggMap.get("aggName_test");
+        List bucketList = terms.getBuckets();
+
+        System.out.println("aggMap = " + aggMap);
+        //System.out.println("bucketList = " + bucketList);
+
+        for (Object bucket : bucketList) {
+            bucket = (Terms.Bucket)bucket;
+            System.out.println( ((Terms.Bucket) bucket).getKey() +": " + ((Terms.Bucket) bucket).getDocCount());
+        }
+    }
+
 }
