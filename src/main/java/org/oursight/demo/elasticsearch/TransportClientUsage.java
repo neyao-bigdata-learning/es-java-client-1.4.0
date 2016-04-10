@@ -28,8 +28,8 @@ public class TransportClientUsage {
 //        Client esClient = connect("my-application", "127.0.0.1", 9300, "megacorp");
 
         // connect to a 1.7.0 ES, which will success
-        Client esClient = connect("elasticsearch", "192.168.1.1", 9300);
-
+//        Client esClient = connect("elasticsearch", "192.168.1.1", 9300);
+        Client esClient = connect("elasticsearch", "221.122.121.96", 19300);
 
 //        getSeveralDocs(esClient, "flume-bank-parsers" ,5);
 
