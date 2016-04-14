@@ -242,7 +242,7 @@ public class SearchAPI {
     }
 
     /**
-     * Equivalent code of query: SearchAPI.searchByNestedFilter.json
+     * Equivalent code of query: SearchAPI.nestedFilter.json
      * @param esClient
      */
     public static void searchByNestedFilter(Client esClient, String index, String type) {
@@ -259,6 +259,10 @@ public class SearchAPI {
 
     }
 
+    /**
+     * Equivalent code of query: SearchAPI.rangeFilter.json
+     * @param esClient
+     */
     public static void rangeFilter(Client esClient) {
         QueryBuilder queryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.rangeFilter("tfp_save_time").gte("2016-04-12 00:00:00").lte("2016-04-12 23:00:00"));
         System.out.println("queryBuilder\r\n = " + queryBuilder);
