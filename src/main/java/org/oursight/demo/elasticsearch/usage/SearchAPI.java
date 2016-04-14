@@ -7,6 +7,9 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.ClusterState;
 import org.elasticsearch.cluster.metadata.IndexMetaData;
 import org.elasticsearch.cluster.metadata.MappingMetaData;
+import org.elasticsearch.index.query.FilterBuilder;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
@@ -14,8 +17,10 @@ import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.json.JSONObject;
 
+import javax.naming.directory.SearchResult;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,13 +51,31 @@ public class SearchAPI {
                 .setTypes("flumetype")
                 .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
                 .setQuery(QueryBuilders.termQuery("scc_lastaddress", "北京"))
-                .setFrom(0).setSize(10)
+                .setFrom(0).setSize(1)
                 .setExplain(true)
                 .execute().
                         actionGet();
         // System.out.println("searchResponse = " + searchResponse);
 
         iterateResponse(searchResponse, "scc_lastaddress");
+
+    }
+    
+    public static void searchWeixinGzh(Client esClient) {
+        // see below link for more details
+        // https://www.elastic.co/guide/en/elasticsearch/client/java-api/1.4/search.html
+//        SearchResponse searchResponse = esClient.prepareSearch("flume-bank-parsers", "flume-weixin-data")
+        SearchResponse searchResponse = esClient.prepareSearch("flume-weixin-data")
+                .setTypes("weixin-data")
+                .setSearchType(SearchType.DFS_QUERY_THEN_FETCH)
+                .setQuery(QueryBuilders.termQuery("sn_enName", "北京"))
+                .setFrom(0).setSize(1)
+                .setExplain(true)
+                .execute().
+                        actionGet();
+        // System.out.println("searchResponse = " + searchResponse);
+
+        iterateResponse(searchResponse);
 
     }
 
@@ -104,6 +127,9 @@ public class SearchAPI {
 
 
             if (fieldNameWantsToShow != null) {
+            	System.out.println("===================");
+            	System.out.println("_source: " + _source);
+            	System.out.println("===================");
                 Object value = _source.get(fieldNameWantsToShow);
                 if (value == null) {
                     System.out.println(i + " can not find field [" + fieldNameWantsToShow + "] ");
@@ -213,6 +239,31 @@ public class SearchAPI {
             bucket = (Terms.Bucket)bucket;
             System.out.println( ((Terms.Bucket) bucket).getKey() +": " + ((Terms.Bucket) bucket).getDocCount());
         }
+    }
+
+    /**
+     * Equivalent code of query: SearchAPI.searchByNestedFilter.json
+     * @param esClient
+     */
+    public static void searchByNestedFilter(Client esClient, String index, String type) {
+        FilterBuilder filterBuilder = FilterBuilders.boolFilter().must(FilterBuilders.nestedFilter("nna_risks",FilterBuilders.existsFilter("nna_risks.ina_id")));
+        System.out.println("filterBuilder.toString() = \r\n" + filterBuilder.toString());
+        SearchResponse response = esClient.prepareSearch(index).setTypes(type).setSize(1).setPostFilter(filterBuilder).execute().actionGet();
+        iterateResponse(response);
+
+        QueryBuilder queryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.nestedFilter("nna_risks", FilterBuilders.boolFilter().must(FilterBuilders.existsFilter("nna_risks.ina_id"))));
+        System.out.println("queryBuilder\r\n = " + queryBuilder);
+        response = esClient.prepareSearch(index).setTypes(type).setSize(1).setQuery(queryBuilder).execute().actionGet();
+        iterateResponse(response);
+
+
+    }
+
+    public static void rangeFilter(Client esClient) {
+        QueryBuilder queryBuilder = QueryBuilders.filteredQuery(null, FilterBuilders.rangeFilter("tfp_save_time").gte("2016-04-12 00:00:00").lte("2016-04-12 23:00:00"));
+        System.out.println("queryBuilder\r\n = " + queryBuilder);
+        SearchResponse response = esClient.prepareSearch("flume-2016-04-*-content-news").setTypes("flumetype").setSize(10).setQuery(queryBuilder).execute().actionGet();
+        iterateResponse(response);
     }
 
 }

@@ -28,19 +28,26 @@ public class TransportClientUsage {
 //        Client esClient = connect("my-application", "127.0.0.1", 9300, "megacorp");
 
         // connect to a 1.7.0 ES, which will success
-//        Client esClient = connect("elasticsearch", "192.168.1.1", 9300);
-        Client esClient = connect("elasticsearch", "221.122.121.96", 19300);
+        Client esClient = connect("elasticsearch", "192.168.1.1", 9300);
+
 
 //        getSeveralDocs(esClient, "flume-bank-parsers" ,5);
 
         // getSingleDoc(esClient, "flume-bank-parsers", null, "00473676");
 
 //        SearchAPI.search(esClient);
+//        SearchAPI.searchWeixinGzh(esClient);
+        
+        
 //        SearchAPI.searchByRawQueryString(esClient);
 //        SearchAPI.listAllIndices(esClient);
 //        SearchAPI.listFields(esClient, "flume-bank-parsers");
-        SearchAPI.aggregationByTerms(esClient,"flume-bank-parsers", "flumetype", "snc_region_province");
 
+//        SearchAPI.aggregationByTerms(esClient,"flume-bank-parsers", "flumetype", "snc_region_province");
+
+//        SearchAPI.searchByNestedFilter(esClient, "flume-2016-04-13-content-news","flumetype");
+
+          SearchAPI.rangeFilter(esClient);
         // ---
         esClient.close();
 

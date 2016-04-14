@@ -1,0 +1,22 @@
+{
+  "query" : {
+    "filtered" : {
+      "filter":{
+        "nested":{
+          "path":"nna_risks",
+          "filter":{
+            "bool":{
+              "must":[
+                {
+                  "exists":{
+                    "field":"nna_risks.ina_id"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}
