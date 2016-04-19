@@ -9,6 +9,7 @@ import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.oursight.demo.elasticsearch.usage.AggApi;
 import org.oursight.demo.elasticsearch.usage.SearchAPI;
 
 import java.util.Date;
@@ -44,10 +45,11 @@ public class TransportClientUsage {
 //        SearchAPI.listFields(esClient, "flume-bank-parsers");
 
 //        SearchAPI.aggregationByTerms(esClient,"flume-bank-parsers", "flumetype", "snc_region_province");
+        AggApi.aggregationByTerms(esClient, "flume-weixin-data", "weixin-data", "sn_enName");
 
 //        SearchAPI.searchByNestedFilter(esClient, "flume-2016-04-13-content-news","flumetype");
 
-          SearchAPI.rangeFilter(esClient);
+//          SearchAPI.rangeFilter(esClient);
         // ---
         esClient.close();
 

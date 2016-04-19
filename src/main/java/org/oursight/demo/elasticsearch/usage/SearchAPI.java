@@ -220,6 +220,7 @@ public class SearchAPI {
 //                addAggregation(AggregationBuilders.global("aggName_test_1").subAggregation(AggregationBuilders.terms("aggName_test_2").field(aggFieldName)));
 
 
+        System.out.println("searchRequestBuilder = " + searchRequestBuilder.toString());
 
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
 
